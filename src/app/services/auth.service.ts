@@ -1,13 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import {  Injectable } from '@angular/core';
 import { AuthResponse } from '../Model/AuthResponse';
-import { catchError } from 'rxjs/operators';
-import { throwError } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
+import { Subject, throwError } from 'rxjs';
+import { User } from '../Model/User';
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
- 
+   user =new Subject<User>();
   constructor(private _http : HttpClient){
 
   }
@@ -16,15 +17,20 @@ export class AuthService {
   {
     const data={email : email ,password: password,retourSecureToken : true}
     return this._http.post<AuthResponse>('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyAc0qPl3lj7VpWp5K2xwYI0jyHKDyMHI9Q',data)
-    .pipe(catchError(this.handleError))
+    .pipe(catchError(this.handleError),tap((res) =>this.handleCreateUser(res)))
   }
   signin(email,password)
   {
         const data={email : email ,password: password,retourSecureToken : true}
         return this._http.post<AuthResponse>('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyAc0qPl3lj7VpWp5K2xwYI0jyHKDyMHI9Q',data)
-        .pipe(catchError(this.handleError))
+        .pipe(catchError(this.handleError), tap((res) =>this.handleCreateUser(res)))
   }
-
+  private handleCreateUser(res){
+    const expiresInTs = new Date().getTime() + +res.expiresIn * 1000;
+    const expiresIn = new Date(expiresInTs);
+    const user = new User(res.email, res.localId, res.idToken, expiresIn);
+    this.user.next(user);
+  }
       private handleError(err){
         let errorMessage ='An unknown error has occured'
         console.log(err);

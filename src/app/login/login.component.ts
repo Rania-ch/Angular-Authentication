@@ -1,8 +1,9 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component,  OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
 import { Observable } from 'rxjs';
 import { AuthResponse } from '../Model/AuthResponse';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -16,7 +17,7 @@ export class LoginComponent implements OnInit {
    errorMessage : string | null =null;
    authObs: Observable<AuthResponse>;
 
-  constructor(private  _authService : AuthService) { }
+  constructor(private  _authService : AuthService,private _router : Router) { }
 
   ngOnInit(): void {
   }
@@ -40,7 +41,9 @@ export class LoginComponent implements OnInit {
     this.authObs.subscribe({
       next:(res)=>{
         console.log(res);
-        this.isLoading =false;},
+        this.isLoading =false;
+        this._router.navigate(['/dashbord'])
+      },
       error:(errMsg)=>{
         this.errorMessage=errMsg;
         this.isLoading =false;
