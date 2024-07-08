@@ -10,6 +10,7 @@ import { TaskService } from '../services/task.service';
   styleUrls: ['./dashbord.component.css']
 })
 export class DashbordComponent implements OnInit {
+
   constructor(private _http : HttpClient, private _taskservice:TaskService) { }
 
   ngOnInit(): void {
@@ -17,21 +18,19 @@ export class DashbordComponent implements OnInit {
   }
   showCreateTaskForm: boolean = false;
   showTaskDetails: boolean = false;
-
+  editMode :boolean =false;
   currentTaskId: string = '';
   isLoading: boolean = false;
-
   currentTask: Task | null = null;
-
   errorMessage: string | null = null;
-
-  editMode: boolean = false;
   selectedTask: Task;
   allTasks: Task[] = [];
+
 
   OpenCreateTaskForm(){
     this.showCreateTaskForm = true;
     this.editMode = false;
+    this.selectedTask={title :'',desc:'',assingedTo:'',createAt:'',priority:'',status:''}
 
   }
 
@@ -46,11 +45,14 @@ export class DashbordComponent implements OnInit {
     key2: {}
   }*/
 
-    CreateTask(data:Task) {
-      this._taskservice.CreateTask(data)
-     .subscribe((resp)=>{console.log(resp)
-     this.fetchAllTasks();
-     })
+    CreateTaskOrUpdate(data:Task) {
+      if(!this.editMode)
+      this._taskservice.CreateTask(data);
+    
+       
+    else
+      //edit task
+      this._taskservice.UpdateTask(this.currentTaskId,data);
       }
   
 
@@ -59,19 +61,27 @@ export class DashbordComponent implements OnInit {
     .subscribe((tasks)=>{this.allTasks=tasks;})
       }
         deleteTask(id : string | undefined) {
-          this._taskservice.deleteTask(id)
-          .subscribe((resp)=>{
-            this.fetchAllTasks();
-          });
+          this._taskservice.deleteTask(id);
+      
 
           }
 
           DeleteAllTasks() {
-              this._taskservice.DeleteAllTasks()
-              .subscribe((resp)=>{
-                this.fetchAllTasks();
-              });
+              this._taskservice.DeleteAllTasks();
+         
             }
+
+
+            OnEditTaskClicked(id :string | undefined) {
+              this.currentTaskId =id;
+              this.showCreateTaskForm =true;
+              this.editMode = true;
+              this.selectedTask=this.allTasks.find((task)=>{return task.id===id})
+              }
+
+              FetchAllTaskClicked(){
+                this.fetchAllTasks()
+              }
           }
         
     

@@ -26,17 +26,22 @@ export class TaskService {
   }
 
   deleteTask(id : string | undefined) {
-    return this._http.delete('https://angular-authentication-948df-default-rtdb.firebaseio.com/tasks/' + id + '.json')
+    return this._http.delete('https://angular-authentication-948df-default-rtdb.firebaseio.com/task/' + id + '.json').subscribe();
 
     }
 
     DeleteAllTasks() {
-     return this._http.delete('https://angular-authentication-948df-default-rtdb.firebaseio.com/tasks.json')
+     return this._http.delete('https://angular-authentication-948df-default-rtdb.firebaseio.com/task.json').subscribe();
       
     }
     CreateTask(data: Task) {
       console.log(data)
-     return this._http.post<{name : string}>("https://angular-authentication-948df-default-rtdb.firebaseio.com/task.json",data)
+     return this._http.post<{name : string}>('https://angular-authentication-948df-default-rtdb.firebaseio.com/task.json',data).subscribe((rep)=>{
+      console.log(rep);
+     })
    
+      }
+      UpdateTask(id : string | undefined ,data: Task){
+        return this._http.put("https://angular-authentication-948df-default-rtdb.firebaseio.com/task/" + id + '.json',data).subscribe();
       }
 }
