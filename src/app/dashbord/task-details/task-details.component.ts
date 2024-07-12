@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Task } from 'src/app/Model/Task';
 
 @Component({
   selector: 'app-task-details',
@@ -7,9 +8,15 @@ import { Component, OnInit } from '@angular/core';
 })
 export class TaskDetailsComponent implements OnInit {
 
+  @Output()
+  CloseDetailView : EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Input() currentTask : Task | null = null;
   constructor() { }
 
   ngOnInit(): void {
+  }
+  OnCloseTaskDetail(){
+    this.CloseDetailView.emit(false);
   }
 
 }

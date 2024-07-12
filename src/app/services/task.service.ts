@@ -1,4 +1,4 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, map } from 'rxjs/operators';
 import { Task } from '../Model/Task';
@@ -15,7 +15,10 @@ export class TaskService {
   }
 
   getAllTasks(){
-    return this._http.get<{[key: string]: Task}>("https://angular-authentication-948df-default-rtdb.firebaseio.com/task.json")
+    let headers = new HttpHeaders();
+    headers = headers.set('content-type', 'application/json');
+    headers = headers.set('Access-Control-Allow-Origin', '*')
+    return this._http.get<{[key: string]: Task}>("https://angular-authentication-948df-default-rtdb.firebaseio.com/task.json",{headers: headers})
     .pipe(map((response)=>{
       let tasks=[];
       for(let key in response){
@@ -88,4 +91,14 @@ export class TaskService {
          }}
         );
       }
+
+    getTaskDetails(id : string |undefined){
+      return this._http.get("https://angular-authentication-948df-default-rtdb.firebaseio.com/task/" + id + '.json')
+      .pipe(map((reponse)=>{
+        console.log(reponse)
+        let task ={};
+        task={...reponse,id :id}
+        return task;
+      }))
+    }
 }

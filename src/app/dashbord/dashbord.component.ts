@@ -12,6 +12,7 @@ import { Subscription } from 'rxjs';
 })
 export class DashbordComponent implements OnInit {
 
+
   constructor(private _http : HttpClient, private _taskservice:TaskService) { }
   errSub : Subscription;
   ngOnInit(): void {
@@ -107,6 +108,17 @@ export class DashbordComponent implements OnInit {
               ngOnDestroy(){
                 this.errSub.unsubscribe();
               }
+
+              ShowCurrentTaskDetails(id: string | undefined) {
+              this.showTaskDetails=true;
+              this._taskservice.getTaskDetails(id).subscribe((data : Task)=>{
+                this.currentTask =data;
+              });;
+                }
+                CloseTaskDetails() {
+                 this.showTaskDetails=false;
+
+                  }   
           }
         
     
