@@ -1,8 +1,9 @@
 import { Task } from 'src/app/Model/Task';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { map } from 'rxjs/operators';
 import { TaskService } from '../services/task.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-dashbord',
@@ -12,9 +13,12 @@ import { TaskService } from '../services/task.service';
 export class DashbordComponent implements OnInit {
 
   constructor(private _http : HttpClient, private _taskservice:TaskService) { }
-
+  errSub : Subscription;
   ngOnInit(): void {
     this.fetchAllTasks();
+    this.errSub =this._taskservice.errorSubject.subscribe((httpErr)=>
+     this.setErrorMessage(httpErr)
+    )
   }
   showCreateTaskForm: boolean = false;
   showTaskDetails: boolean = false;
@@ -25,7 +29,6 @@ export class DashbordComponent implements OnInit {
   errorMessage: string | null = null;
   selectedTask: Task;
   allTasks: Task[] = [];
-
 
   OpenCreateTaskForm(){
     this.showCreateTaskForm = true;
@@ -57,8 +60,26 @@ export class DashbordComponent implements OnInit {
   
 
     private fetchAllTasks(){
+      this.isLoading =true;
       this._taskservice.getAllTasks()
-    .subscribe((tasks)=>{this.allTasks=tasks;})
+    .subscribe((tasks)=>{this.allTasks=tasks;
+      this.isLoading =false;
+    },(error)=>{
+      this.setErrorMessage(error);
+      this.isLoading=false;
+   
+    })
+      }
+
+      private setErrorMessage(err :HttpErrorResponse){
+        if (err.error.error === 'Permission denied'){
+          this.errorMessage='You do not have permission to perform this action';
+        }
+        else { this.errorMessage=err.message;}
+        setTimeout(()=>{
+          this.errorMessage=null
+      },3000)
+        
       }
         deleteTask(id : string | undefined) {
           this._taskservice.deleteTask(id);
@@ -81,6 +102,10 @@ export class DashbordComponent implements OnInit {
 
               FetchAllTaskClicked(){
                 this.fetchAllTasks()
+              }
+
+              ngOnDestroy(){
+                this.errSub.unsubscribe();
               }
           }
         

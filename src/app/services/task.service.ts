@@ -1,14 +1,16 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { map } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { Task } from '../Model/Task';
+import { Subject, throwError } from 'rxjs';
+import { LoggingService } from './logging.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TaskService {
-
-  constructor(private _http : HttpClient) { 
+  errorSubject = new Subject<HttpErrorResponse>();
+  constructor(private _http : HttpClient , private _loggingService : LoggingService) { 
 
   }
 
@@ -22,26 +24,68 @@ export class TaskService {
         }
       }
       return tasks;
+    }), catchError((err)=>{
+      const errorObj = {statusCode : err.status, errorMessage:err.message, datetime : new Date}
+      this._loggingService.logError(errorObj);
+      return throwError(err);
     }))
   }
 
   deleteTask(id : string | undefined) {
-    return this._http.delete('https://angular-authentication-948df-default-rtdb.firebaseio.com/task/' + id + '.json').subscribe();
+    return this._http.delete('https://angular-authentication-948df-default-rtdb.firebaseio.com/task/' + id + '.json')
+    .pipe(catchError((err)=>{
+      const errorObj = {statusCode : err.status, errorMessage:err.message, datetime : new Date}
+      this._loggingService.logError(errorObj);
+      return throwError(err);
+    }))
+    .subscribe({error : (err)=>{
+      this.errorSubject.next(err);
+     }}
+    );
 
     }
 
     DeleteAllTasks() {
-     return this._http.delete('https://angular-authentication-948df-default-rtdb.firebaseio.com/task.json').subscribe();
+     return this._http.delete('https://angular-authentication-948df-default-rtdb.firebaseio.com/task.json')
+     .pipe(catchError((err)=>{
+      const errorObj = {statusCode : err.status, errorMessage:err.message, datetime : new Date}
+      this._loggingService.logError(errorObj);
+      return throwError(err);
+    }))
+     .subscribe({error : (err)=>{
+      
+      this.errorSubject.next(err);
+     }}
+    );
       
     }
     CreateTask(data: Task) {
       console.log(data)
-     return this._http.post<{name : string}>('https://angular-authentication-948df-default-rtdb.firebaseio.com/task.json',data).subscribe((rep)=>{
-      console.log(rep);
-     })
+     return this._http.post<{name : string}>('https://angular-authentication-948df-default-rtdb.firebaseio.com/task.json',data)
+     .pipe(catchError((err)=>{
+      const errorObj = {statusCode : err.status, errorMessage:err.message, datetime : new Date}
+      this._loggingService.logError(errorObj);
+      return throwError(err);
+    }))
+     .subscribe(
+     {error : (err)=>{
+      this.errorSubject.next(err);
+     }}
+    
+    )
    
       }
       UpdateTask(id : string | undefined ,data: Task){
-        return this._http.put("https://angular-authentication-948df-default-rtdb.firebaseio.com/task/" + id + '.json',data).subscribe();
+        return this._http.put("https://angular-authentication-948df-default-rtdb.firebaseio.com/task/" + id + '.json',data)
+        .pipe(catchError((err)=>{
+          const errorObj = {statusCode : err.status, errorMessage:err.message, datetime : new Date}
+          this._loggingService.logError(errorObj);
+          return throwError(err);
+        }))
+        
+        .subscribe({error : (err)=>{
+          this.errorSubject.next(err);
+         }}
+        );
       }
 }
